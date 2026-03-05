@@ -1,29 +1,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Card,
-  Row,
-  Col,
-  Table,
-  Tag,
-  Typography,
-  Button,
-  Spin,
-  Descriptions,
-  Avatar,
-  message,
-} from "antd";
-import {
-  LogoutOutlined,
-  StarOutlined,
-  GlobalOutlined,
-  ThunderboltOutlined,
-  MenuOutlined,
-} from "@ant-design/icons";
+import { Card, Row, Col, Table, Tag, Typography, Button, Spin, Descriptions, Avatar, message } from "antd";
+import { LogoutOutlined, StarOutlined, GlobalOutlined, ThunderboltOutlined, MenuOutlined } from "@ant-design/icons";
 import api from "../api";
 import Sidebar from "../components/Sidebar.jsx";
 import ThemeSwitcher from "../components/ThemeSwitcher.jsx";
 import SettingsView from "../components/SettingsView.jsx";
+import KundliView from "../views/KundliView.jsx";
+import DashaView from "../views/DashaView.jsx";
+import RemediesView from "../views/RemediesView.jsx";
+import ConsultationsView from "../views/ConsultationsView.jsx";
 
 const { Title, Text } = Typography;
 
@@ -33,6 +19,7 @@ export default function Dashboard() {
   const [rashis, setRashis] = useState([]);
   const [nakshatras, setNakshatras] = useState([]);
   const [planets, setPlanets] = useState([]);
+  const [snapshot, setSnapshot] = useState(null);
   const [activeView, setActiveView] = useState("overview");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -43,16 +30,18 @@ export default function Dashboard() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const [profileRes, rashiRes, nakshatraRes, planetRes] = await Promise.all([
+        const [profileRes, rashiRes, nakshatraRes, planetRes, snapshotRes] = await Promise.all([
           api.get("/dashboard/profile"),
           api.get("/dashboard/rashis"),
           api.get("/dashboard/nakshatras"),
           api.get("/dashboard/planets"),
+          api.get("/astrology/snapshot").catch(() => ({ data: null })),
         ]);
         setProfile(profileRes.data);
         setRashis(rashiRes.data);
         setNakshatras(nakshatraRes.data);
         setPlanets(planetRes.data);
+        setSnapshot(snapshotRes.data);
       } catch {
         message.error("Failed to load data");
       } finally {
@@ -74,13 +63,8 @@ export default function Dashboard() {
     { title: "English", dataIndex: "englishName", key: "englishName" },
     { title: "Lord", dataIndex: "lord", key: "lord" },
     {
-      title: "Element",
-      dataIndex: "element",
-      key: "element",
-      render: (el) => {
-        const colors = { Fire: "volcano", Earth: "green", Air: "geekblue", Water: "cyan" };
-        return <Tag color={colors[el]}>{el}</Tag>;
-      },
+      title: "Element", dataIndex: "element", key: "element",
+      render: (el) => <Tag color={{ Fire: "volcano", Earth: "green", Air: "geekblue", Water: "cyan" }[el]}>{el}</Tag>,
     },
     { title: "Quality", dataIndex: "quality", key: "quality" },
     { title: "Symbol", dataIndex: "symbol", key: "symbol" },
@@ -92,11 +76,7 @@ export default function Dashboard() {
     { title: "Lord", dataIndex: "lord", key: "lord" },
     { title: "Deity", dataIndex: "deity", key: "deity" },
     { title: "Rashi", dataIndex: "rashi", key: "rashi" },
-    {
-      title: "Degrees",
-      key: "degrees",
-      render: (_, r) => `${r.startDegree?.toFixed(2)}° – ${r.endDegree?.toFixed(2)}°`,
-    },
+    { title: "Degrees", key: "degrees", render: (_, r) => `${r.startDegree?.toFixed(2)}° – ${r.endDegree?.toFixed(2)}°` },
   ];
 
   const planetColumns = [
@@ -104,13 +84,8 @@ export default function Dashboard() {
     { title: "Hindi", dataIndex: "nameHindi", key: "nameHindi" },
     { title: "Sanskrit", dataIndex: "nameSanskrit", key: "nameSanskrit" },
     {
-      title: "Nature",
-      dataIndex: "nature",
-      key: "nature",
-      render: (n) => {
-        const colors = { Benefic: "success", Malefic: "error", Neutral: "warning" };
-        return <Tag color={colors[n]}>{n}</Tag>;
-      },
+      title: "Nature", dataIndex: "nature", key: "nature",
+      render: (n) => <Tag color={{ Benefic: "success", Malefic: "error", Neutral: "warning" }[n]}>{n}</Tag>,
     },
     { title: "Own Sign", dataIndex: "ownSign", key: "ownSign", render: (s) => s?.join(", ") },
     { title: "Exalted In", dataIndex: "exaltedIn", key: "exaltedIn" },
@@ -131,17 +106,21 @@ export default function Dashboard() {
   }
 
   const statCards = [
-    { label: "Rashis", sublabel: "Zodiac Signs", value: rashis.length, icon: <StarOutlined />, gradient: "var(--stat1)" },
-    { label: "Nakshatras", sublabel: "Lunar Mansions", value: nakshatras.length, icon: <GlobalOutlined />, gradient: "var(--stat2)" },
-    { label: "Navagraha", sublabel: "Nine Planets", value: planets.length, icon: <ThunderboltOutlined />, gradient: "var(--stat3)" },
+    { label: "Rashis",     sublabel: "Zodiac Signs",   value: rashis.length,     icon: <StarOutlined />,        gradient: "var(--stat1)" },
+    { label: "Nakshatras", sublabel: "Lunar Mansions", value: nakshatras.length, icon: <GlobalOutlined />,      gradient: "var(--stat2)" },
+    { label: "Navagraha",  sublabel: "Nine Planets",   value: planets.length,    icon: <ThunderboltOutlined />, gradient: "var(--stat3)" },
   ];
 
-  const viewTitles = {
-    overview: "Overview",
-    rashis: "Rashis — Zodiac Signs",
-    nakshatras: "Nakshatras — Lunar Mansions",
-    planets: "Navagraha — Nine Planets",
-    settings: "Settings",
+  const VIEW_TITLES = {
+    overview:      "Overview",
+    kundli:        "Kundli — Birth Chart",
+    dasha:         "Dasha — Planetary Periods",
+    remedies:      "Remedies — Upay",
+    consultations: "Consultations",
+    rashis:        "Rashis — Zodiac Signs",
+    nakshatras:    "Nakshatras — Lunar Mansions",
+    planets:       "Navagraha — Nine Planets",
+    settings:      "Settings",
   };
 
   const renderContent = () => {
@@ -161,8 +140,24 @@ export default function Dashboard() {
                 </Col>
               ))}
             </Row>
+            {snapshot?.chart && (
+              <Row gutter={[16, 16]} style={{ marginTop: 20 }}>
+                {[
+                  { label: "Ascendant (Lagna)", value: snapshot.chart.ascendant?.sign, gradient: "var(--stat1)" },
+                  { label: "Moon Sign (Rashi)", value: snapshot.chart.moonSign,         gradient: "var(--stat2)" },
+                  { label: "Sun Sign",          value: snapshot.chart.sunSign,          gradient: "var(--stat3)" },
+                ].map((item) => (
+                  <Col xs={24} sm={8} key={item.label}>
+                    <div className="lagna-card" style={{ background: item.gradient }}>
+                      <div className="lagna-label">{item.label}</div>
+                      <div className="lagna-value">{item.value}</div>
+                    </div>
+                  </Col>
+                ))}
+              </Row>
+            )}
             {profile && (
-              <Card className="profile-card" style={{ marginTop: 24 }}>
+              <Card className="profile-card" style={{ marginTop: 20 }}>
                 <div className="profile-header">
                   <Avatar size={64} style={{ background: "var(--stat1)", fontSize: 24, flexShrink: 0 }}>
                     {profile.name?.[0]?.toUpperCase()}
@@ -175,9 +170,7 @@ export default function Dashboard() {
                 <div className="profile-divider" />
                 <Descriptions column={{ xs: 1, sm: 2, lg: 3 }} size="small">
                   <Descriptions.Item label="Date of Birth">
-                    {profile.dateOfBirth
-                      ? new Date(profile.dateOfBirth).toLocaleDateString("en-IN")
-                      : <span style={{ color: "var(--text-muted)" }}>Not set</span>}
+                    {profile.dateOfBirth ? new Date(profile.dateOfBirth).toLocaleDateString("en-IN") : <span style={{ color: "var(--text-muted)" }}>Not set</span>}
                   </Descriptions.Item>
                   <Descriptions.Item label="Birth Time">
                     {profile.birthTime || <span style={{ color: "var(--text-muted)" }}>Not set</span>}
@@ -191,48 +184,39 @@ export default function Dashboard() {
           </div>
         );
 
+      case "kundli":
+        return <KundliView snapshot={snapshot} onGenerated={(data) => setSnapshot(data)} />;
+
+      case "dasha":
+        return <DashaView />;
+
+      case "remedies":
+        return <RemediesView />;
+
+      case "consultations":
+        return <ConsultationsView />;
+
       case "rashis":
         return (
           <Card className="data-card">
-            <Table
-              dataSource={rashis}
-              columns={rashiColumns}
-              rowKey="_id"
-              pagination={false}
-              scroll={{ x: true }}
-              className="astro-table"
-              expandable={{ expandedRowRender: (r) => <p style={{ color: "var(--text-muted)", margin: 0 }}>{r.description}</p> }}
-            />
+            <Table dataSource={rashis} columns={rashiColumns} rowKey="_id" pagination={false} scroll={{ x: true }} className="astro-table"
+              expandable={{ expandedRowRender: (r) => <p style={{ color: "var(--text-muted)", margin: 0 }}>{r.description}</p> }} />
           </Card>
         );
 
       case "nakshatras":
         return (
           <Card className="data-card">
-            <Table
-              dataSource={nakshatras}
-              columns={nakshatraColumns}
-              rowKey="_id"
-              pagination={false}
-              scroll={{ x: true }}
-              className="astro-table"
-              expandable={{ expandedRowRender: (r) => <p style={{ color: "var(--text-muted)", margin: 0 }}>{r.description}</p> }}
-            />
+            <Table dataSource={nakshatras} columns={nakshatraColumns} rowKey="_id" pagination={false} scroll={{ x: true }} className="astro-table"
+              expandable={{ expandedRowRender: (r) => <p style={{ color: "var(--text-muted)", margin: 0 }}>{r.description}</p> }} />
           </Card>
         );
 
       case "planets":
         return (
           <Card className="data-card">
-            <Table
-              dataSource={planets}
-              columns={planetColumns}
-              rowKey="_id"
-              pagination={false}
-              scroll={{ x: true }}
-              className="astro-table"
-              expandable={{ expandedRowRender: (r) => <p style={{ color: "var(--text-muted)", margin: 0 }}>{r.description}</p> }}
-            />
+            <Table dataSource={planets} columns={planetColumns} rowKey="_id" pagination={false} scroll={{ x: true }} className="astro-table"
+              expandable={{ expandedRowRender: (r) => <p style={{ color: "var(--text-muted)", margin: 0 }}>{r.description}</p> }} />
           </Card>
         );
 
@@ -250,12 +234,10 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard-root">
-      {/* Mobile overlay */}
       {mobileSidebarOpen && (
         <div className="sidebar-overlay" onClick={() => setMobileSidebarOpen(false)} />
       )}
 
-      {/* Sidebar */}
       <div className={`sidebar-wrapper ${mobileSidebarOpen ? "mobile-open" : ""}`}>
         <Sidebar
           active={activeView}
@@ -266,27 +248,20 @@ export default function Dashboard() {
         />
       </div>
 
-      {/* Main area */}
       <div className={`dashboard-main ${sidebarCollapsed ? "main-expanded" : ""}`}>
-        {/* Top header */}
         <header className="dashboard-header">
           <div className="header-left">
-            <button
-              className="mobile-menu-btn"
-              onClick={() => setMobileSidebarOpen(true)}
-              aria-label="Open menu"
-            >
+            <button className="mobile-menu-btn" onClick={() => setMobileSidebarOpen(true)} aria-label="Open menu">
               <MenuOutlined />
             </button>
             <div className="header-breadcrumb">
               <Text style={{ color: "var(--text-muted)", fontSize: 12 }}>Dashboard</Text>
               <span style={{ color: "var(--border)", margin: "0 6px" }}>/</span>
               <Text style={{ color: "var(--text-primary)", fontWeight: 600, fontSize: 14 }}>
-                {viewTitles[activeView]}
+                {VIEW_TITLES[activeView]}
               </Text>
             </div>
           </div>
-
           <div className="header-right">
             <ThemeSwitcher />
             <div className="header-user">
@@ -295,17 +270,14 @@ export default function Dashboard() {
               </Avatar>
               <span className="header-username">{user.name}</span>
             </div>
-            <Button icon={<LogoutOutlined />} onClick={logout} className="logout-btn">
-              Logout
-            </Button>
+            <Button icon={<LogoutOutlined />} onClick={logout} className="logout-btn">Logout</Button>
           </div>
         </header>
 
-        {/* Page content */}
         <main className="dashboard-content">
           <div className="page-title-row">
             <Title level={3} style={{ margin: 0, color: "var(--text-primary)" }}>
-              {viewTitles[activeView]}
+              {VIEW_TITLES[activeView]}
             </Title>
           </div>
           {renderContent()}

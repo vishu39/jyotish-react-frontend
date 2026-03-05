@@ -1,3 +1,160 @@
+/* ─── Sidebar Section Labels ─────────────────────────────── */
+
+.sidebar-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  padding: 16px 14px 4px;
+  opacity: 0.6;
+}
+.sidebar-section-label.hidden { display: none; }
+
+
+/* ─── Kundli View ────────────────────────────────────────── */
+
+.kundli-empty {
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.kundli-empty-inner {
+  text-align: center;
+  max-width: 420px;
+}
+.kundli-empty-icon {
+  font-size: 72px;
+  color: var(--accent);
+  filter: drop-shadow(var(--glow));
+  animation: spinSlow 20s linear infinite;
+  display: block;
+}
+.kundli-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.lagna-card {
+  border-radius: 16px;
+  padding: 20px 20px 16px;
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+  transition: transform 0.2s;
+}
+.lagna-card:hover { transform: translateY(-3px); }
+.lagna-label { font-size: 12px; opacity: 0.8; margin-bottom: 6px; }
+.lagna-value { font-size: 22px; font-weight: 700; }
+.lagna-sub { font-size: 11px; opacity: 0.7; margin-top: 4px; }
+.kundli-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: var(--accent-soft);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+
+/* ─── Dasha View ─────────────────────────────────────────── */
+
+.dasha-active-card {
+  border-radius: 20px;
+  padding: 24px;
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+.dasha-active-label { font-size: 12px; opacity: 0.8; margin-bottom: 8px; }
+.dasha-active-planet { font-size: 32px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+.dasha-active-planet span { font-size: 36px; }
+.dasha-active-range { font-size: 13px; opacity: 0.85; margin-top: 4px; }
+.dasha-active-pct { font-size: 12px; opacity: 0.7; margin-top: 4px; }
+
+.dasha-collapse { background: transparent !important; border: none !important; }
+.dasha-collapse .ant-collapse-item {
+  border: 1px solid var(--border) !important;
+  border-radius: 12px !important;
+  margin-bottom: 8px !important;
+  overflow: hidden;
+  background: var(--accent-soft) !important;
+}
+.dasha-collapse .ant-collapse-header { padding: 14px 16px !important; }
+
+.dasha-maha-label { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.dasha-planet-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.dasha-planet-dot.small { width: 8px; height: 8px; }
+.dasha-maha-planet { font-weight: 600; color: var(--text-primary); font-size: 14px; }
+.dasha-maha-range { color: var(--text-muted); font-size: 12px; margin-left: auto; }
+
+.dasha-antar-list { display: flex; flex-direction: column; gap: 6px; }
+.dasha-antar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.dasha-antar-item.antar-active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.dasha-antar-planet { font-weight: 500; color: var(--text-primary); font-size: 13px; min-width: 80px; }
+.dasha-antar-range { color: var(--text-muted); font-size: 12px; flex: 1; }
+
+
+/* ─── Remedies View ──────────────────────────────────────── */
+
+.remedy-plan-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+.remedy-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.remedy-card { height: 100%; }
+.remedy-card-top { display: flex; align-items: center; justify-content: space-between; }
+.remedy-type-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--accent);
+}
+.remedy-meta { display: flex; gap: 12px; flex-wrap: wrap; }
+.remedy-meta-item { color: var(--text-muted); font-size: 12px; }
+
+.tracking-log { display: flex; flex-direction: column; gap: 10px; }
+.tracking-log-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--accent-soft);
+  border-radius: 10px;
+}
+
+
+/* ─── Consultations View ─────────────────────────────────── */
+
+.astrologer-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+.astrologer-card {}
+.astrologer-header { display: flex; align-items: center; gap: 14px; }
+
+.consultation-list { display: flex; flex-direction: column; gap: 12px; }
+.consultation-item {}
+.consultation-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.consultation-info { flex: 1; }
+.consultation-mode { display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-size: 12px; text-transform: capitalize; }
+.consultation-actions { display: flex; flex-direction: column; align-items: flex-end; flex-shrink: 0; }
+
+
 /* ─── Auth Pages ─────────────────────────────────────────── */
 
 .auth-page {
